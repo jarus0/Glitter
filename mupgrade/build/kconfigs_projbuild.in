@@ -1,0 +1,5 @@
+source "/home/suraj/esp/esp-mdf/esp-idf/components/app_update/Kconfig.projbuild"
+source "/home/suraj/esp/esp-mdf/esp-idf/components/bootloader/Kconfig.projbuild"
+source "/home/suraj/esp/esp-mdf/esp-idf/components/esptool_py/Kconfig.projbuild"
+source "/home/suraj/Projects/Glitter6/mupgrade/main/Kconfig.projbuild"
+source "/home/suraj/esp/esp-mdf/esp-idf/components/partition_table/Kconfig.projbuild"
