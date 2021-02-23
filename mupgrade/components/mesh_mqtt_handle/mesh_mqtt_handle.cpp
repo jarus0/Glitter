@@ -39,7 +39,7 @@ static uint8_t mwifi_addr_any[] = MWIFI_ADDR_ANY;
 static void ota_task()
 {
     mdf_err_t ret       = MDF_OK;
-    uint8_t *data       = MDF_MALLOC(MWIFI_PAYLOAD_LEN);
+    uint8_t *data       = (uint8_t*)MDF_MALLOC(MWIFI_PAYLOAD_LEN);
     char name[32]       = {0x0};
     size_t total_size   = 0;
     int start_time      = 0;
@@ -149,10 +149,11 @@ static void ota_task()
     /**
      * @brief 5. the root notifies nodes to restart
      */
-    const char *restart_str = "restart";
+    {const char *restart_str = "restart";
     ret = mwifi_root_write(upgrade_result.successed_addr, upgrade_result.successed_num,
                            &data_type, restart_str, strlen(restart_str), true);
     MDF_ERROR_GOTO(ret != MDF_OK, EXIT, "<%s> mwifi_root_recv", mdf_err_to_name(ret));
+}
 
 EXIT:
     MDF_FREE(data);
@@ -167,13 +168,13 @@ static mesh_mqtt_data_t *mesh_mqtt_parse_data(const char *topic, size_t topic_si
     uint8_t mac[MWIFI_ADDR_LEN];
 
     char *mac_str = strchr(topic, '/') + 1;
-    assert(mac_str != NULL + 1);
+    assert((int)mac_str != NULL + 1);
     char *end_pos = strchr(mac_str, '/');
     assert(end_pos != NULL);
     *end_pos = '\0';
     mlink_mac_str2hex(mac_str, mac);
 
-    char *str = MDF_MALLOC(payload_size + 1);
+    char *str = (char*)MDF_MALLOC(payload_size + 1);
 
     if (str == NULL) {
         MDF_LOGE("No memory");
@@ -190,7 +191,7 @@ static mesh_mqtt_data_t *mesh_mqtt_parse_data(const char *topic, size_t topic_si
         return NULL;
     }
 
-    mesh_mqtt_data_t *request = MDF_CALLOC(1, sizeof(mesh_mqtt_data_t));
+    mesh_mqtt_data_t *request = (mesh_mqtt_data_t*)MDF_CALLOC(1, sizeof(mesh_mqtt_data_t));
 
     if (request == NULL) {
         MDF_LOGE("No memory");
@@ -198,7 +199,7 @@ static mesh_mqtt_data_t *mesh_mqtt_parse_data(const char *topic, size_t topic_si
     }
 
     if (memcmp(mac, mwifi_addr_any, MWIFI_ADDR_LEN) == 0) {
-        request->addrs_list = MDF_MALLOC(MWIFI_ADDR_LEN);
+        request->addrs_list = (uint8_t*)MDF_MALLOC(MWIFI_ADDR_LEN);
         memcpy(request->addrs_list, mwifi_addr_any, MWIFI_ADDR_LEN);
         request->addrs_num = 1;
     } else {
@@ -210,7 +211,7 @@ static mesh_mqtt_data_t *mesh_mqtt_parse_data(const char *topic, size_t topic_si
         }
 
         request->addrs_num = cJSON_GetArraySize(addr);
-        request->addrs_list = MDF_MALLOC(MWIFI_ADDR_LEN * request->addrs_num);
+        request->addrs_list = (uint8_t*)MDF_MALLOC(MWIFI_ADDR_LEN * request->addrs_num);
         cJSON *item = NULL;
         int i = 0;
         cJSON_ArrayForEach(item, addr) {
@@ -226,6 +227,7 @@ static mesh_mqtt_data_t *mesh_mqtt_parse_data(const char *topic, size_t topic_si
         }
     }
 
+{
     cJSON *type = cJSON_GetObjectItem(obj, "type");
 
     if (type == NULL || cJSON_IsString(type) != true) {
@@ -242,14 +244,14 @@ static mesh_mqtt_data_t *mesh_mqtt_parse_data(const char *topic, size_t topic_si
         goto _exit;
     }
 
-cJSON *data1 = cJSON_GetObjectItem(data, "key3");    
-char *ch;
-ch = cJSON_PrintUnformatted(data1);
-MDF_LOGI("------------>%s\n", ch);
-if (strncmp(ch, "\"update\"", strlen("\"update\"")) == 0) {
-    MDF_LOGI("---------Going to OTA\n");
-    xTaskCreate(ota_task, "ota_task", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
-}
+    cJSON *data1 = cJSON_GetObjectItem(data, "key3");    
+    char *ch;
+    ch = cJSON_PrintUnformatted(data1);
+    MDF_LOGI("------------>%s\n", ch);
+    if (strncmp(ch, "\"update\"", strlen("\"update\"")) == 0) {
+        MDF_LOGI("---------Going to OTA\n");
+        xTaskCreate((TaskFunction_t)ota_task, "ota_task", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
+    }
 
 
 
@@ -262,7 +264,7 @@ if (strncmp(ch, "\"update\"", strlen("\"update\"")) == 0) {
         }
 
         size_t dst_size = (strlen(data->valuestring) / 4 + 1) * 3;
-        request->data = MDF_MALLOC(dst_size);
+        request->data = (char*)MDF_MALLOC(dst_size);
         assert(request->data != NULL);
         int ret = mbedtls_base64_decode((uint8_t *)request->data, dst_size, &request->size, (uint8_t *)data->valuestring, strlen(data->valuestring));
         assert(ret == 0);
@@ -274,10 +276,10 @@ if (strncmp(ch, "\"update\"", strlen("\"update\"")) == 0) {
             goto _exit;
         }
 
-        request->size = strlen(data->valuestring);
-        request->data = MDF_MALLOC(request->size);
+        {request->size = strlen(data->valuestring);
+        request->data = (char*)MDF_MALLOC(request->size);
         assert(request->data != NULL);
-        strcpy(request->data, data->valuestring);
+        strcpy(request->data, data->valuestring);}
     } else if (strcmp(type->valuestring, "json") == 0) {
         str = cJSON_PrintUnformatted(data);
 
@@ -288,7 +290,7 @@ if (strncmp(ch, "\"update\"", strlen("\"update\"")) == 0) {
         }
 
         request->size = strlen(str);
-        request->data = MDF_MALLOC(request->size);
+        request->data = (char*)MDF_MALLOC(request->size);
         memcpy(request->data, str, request->size);
         MDF_FREE(str);
     } else {
@@ -297,7 +299,7 @@ if (strncmp(ch, "\"update\"", strlen("\"update\"")) == 0) {
         MDF_FREE(request);
         goto _exit;
     }
-
+}
 _exit:
     cJSON_Delete(obj);
     return request;
@@ -411,7 +413,7 @@ mdf_err_t mesh_mqtt_update_topo()
     char mac_addr[13];
 
     int table_size = esp_mesh_get_routing_table_size();
-    mesh_addr_t *route_table = MDF_CALLOC(table_size, sizeof(mesh_addr_t));
+    mesh_addr_t *route_table = (mesh_addr_t*) MDF_CALLOC(table_size, sizeof(mesh_addr_t));
     ESP_ERROR_CHECK(esp_mesh_get_routing_table(route_table, table_size * sizeof(mesh_addr_t), &table_size));
 
     cJSON *obj = cJSON_CreateArray();
@@ -422,13 +424,13 @@ mdf_err_t mesh_mqtt_update_topo()
         MDF_ERROR_GOTO(item == NULL, _no_mem, "Create string object failed");
         cJSON_AddItemToArray(obj, item);
     }
-
+    {
     MDF_FREE(route_table);
     char *str = cJSON_PrintUnformatted(obj);
     MDF_ERROR_GOTO(str == NULL, _no_mem, "Print JSON failed");
     esp_mqtt_client_publish(g_mesh_mqtt.client, g_mesh_mqtt.topo_topic, str, strlen(str), 0, 0);
     MDF_FREE(str);
-    ret = MDF_OK;
+    ret = MDF_OK;}
 _no_mem:
     cJSON_Delete(obj);
     return ret;
@@ -448,7 +450,8 @@ mdf_err_t mesh_mqtt_write(uint8_t *addr, const char *data, size_t size, mesh_mqt
     mlink_mac_hex2str(addr, mac_str);
 
     cJSON *obj = cJSON_CreateObject();
-    MDF_ERROR_GOTO(obj == NULL, _no_mem, "Create JSON failed");
+
+    MDF_ERROR_GOTO(obj == NULL, _no_mem, "Create JSON failed");{
     cJSON *src_addr = cJSON_AddStringToObject(obj, "addr", mac_str);
     MDF_ERROR_GOTO(src_addr == NULL, _no_mem, "Add string to JSON failed");
 
@@ -456,7 +459,7 @@ mdf_err_t mesh_mqtt_write(uint8_t *addr, const char *data, size_t size, mesh_mqt
         case MESH_MQTT_DATA_BYTES: {
             size_t dst_size = (size / 3 + 1) * 4 + 1 + 1;
             size_t olen = 0;
-            uint8_t *dst = MDF_CALLOC(1, dst_size);
+            uint8_t *dst = (uint8_t*)MDF_CALLOC(1, dst_size);
             int ret = mbedtls_base64_encode(dst, dst_size, &olen, (uint8_t *)data, size);
             assert(ret == 0);
             cJSON_AddStringToObject(obj, "type", "bytes");
@@ -467,7 +470,7 @@ mdf_err_t mesh_mqtt_write(uint8_t *addr, const char *data, size_t size, mesh_mqt
         }
 
         case MESH_MQTT_DATA_STRING: {
-            char *buffer = MDF_MALLOC(size + 1);
+            char *buffer = (char*)MDF_MALLOC(size + 1);
             MDF_ERROR_GOTO(buffer == NULL, _no_mem, "Allocate mem failed");
             memcpy(buffer, data, size);
             buffer[size] = '\0';
@@ -479,7 +482,7 @@ mdf_err_t mesh_mqtt_write(uint8_t *addr, const char *data, size_t size, mesh_mqt
         }
 
         case MESH_MQTT_DATA_JSON: {
-            char *buffer = MDF_MALLOC(size + 1);
+            char *buffer = (char*)MDF_MALLOC(size + 1);
             MDF_ERROR_GOTO(buffer == NULL, _no_mem, "Allocate mem failed");
             memcpy(buffer, data, size);
             buffer[size] = '\0';
@@ -493,14 +496,15 @@ mdf_err_t mesh_mqtt_write(uint8_t *addr, const char *data, size_t size, mesh_mqt
         default:
             break;
     }
-
+{
     char *payload = cJSON_PrintUnformatted(obj);
     MDF_ERROR_GOTO(payload == NULL, _no_mem, "Print JSON failed");
 
     esp_mqtt_client_publish(g_mesh_mqtt.client, g_mesh_mqtt.publish_topic, payload, strlen(payload), 0, 0);
     MDF_FREE(payload);
 
-    ret = MDF_OK;
+    ret = MDF_OK;}
+}
 _no_mem:
     cJSON_Delete(obj);
     return ret;
@@ -524,11 +528,17 @@ mdf_err_t mesh_mqtt_start(char *url)
     MDF_ERROR_CHECK(g_mesh_mqtt.client != NULL, MDF_ERR_INVALID_STATE, "MQTT client is already running");
 
     esp_mqtt_client_config_t mqtt_cfg = {
-        .uri = url,
-        .event_handle = mqtt_event_handler,
+//        .uri = url,
+//        .event_handle = mqtt_event_handler,
         // .client_cert_pem = (const char *)client_cert_pem_start,
         // .client_key_pem = (const char *)client_key_pem_start,
     };
+
+mqtt_cfg.uri = url;
+//memcpy(mqtt_cfg.uri, url, strlen(url));
+mqtt_cfg.event_handle = mqtt_event_handler;
+
+
     MDF_ERROR_ASSERT(esp_read_mac(g_mesh_mqtt.addr, ESP_MAC_WIFI_STA));
     snprintf(g_mesh_mqtt.publish_topic, sizeof(g_mesh_mqtt.publish_topic), publish_topic_template, MAC2STR(g_mesh_mqtt.addr));
     snprintf(g_mesh_mqtt.topo_topic, sizeof(g_mesh_mqtt.topo_topic), topo_topic_template, MAC2STR(g_mesh_mqtt.addr));

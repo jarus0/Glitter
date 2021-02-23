@@ -1,0 +1,1 @@
+#define CONFIG_MQTT_URL "something"

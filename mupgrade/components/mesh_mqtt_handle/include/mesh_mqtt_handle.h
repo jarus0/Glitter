@@ -139,8 +139,8 @@ mdf_err_t mesh_mqtt_start(char *url);
  */
 mdf_err_t mesh_mqtt_stop();
 
-#ifdef __cplusplus
-}
-#endif /**< _cplusplus */
+//#ifdef __cplusplus
+//}
+//#endif /**< _cplusplus */
 
 #endif /**< __MESH_MQTT_HANDLE_H__ */

@@ -28,7 +28,7 @@ esp_netif_t *sta_netif;
 static void root_read_task(void *arg)
 {
     mdf_err_t ret = MDF_OK;
-    char *data    = MDF_MALLOC(MWIFI_PAYLOAD_LEN);
+    char *data    = (char*)MDF_MALLOC(MWIFI_PAYLOAD_LEN);
     size_t size   = MWIFI_PAYLOAD_LEN;
     mwifi_data_type_t data_type      = {0};
     uint8_t src_addr[MWIFI_ADDR_LEN] = {0};
@@ -107,7 +107,7 @@ MEM_FREE:
 static void node_read_task(void *arg)
 {
     mdf_err_t ret = MDF_OK;
-    char *data    = MDF_MALLOC(MWIFI_PAYLOAD_LEN);
+    char *data    = (char*) MDF_MALLOC(MWIFI_PAYLOAD_LEN);
     size_t size   = MWIFI_PAYLOAD_LEN;
     mwifi_data_type_t data_type      = {0x0};
     uint8_t src_addr[MWIFI_ADDR_LEN] = {0};
@@ -190,7 +190,7 @@ static void node_write_task(void *arg)
 static void print_system_info_timercb(void *timer)
 {
     uint8_t primary = 0;
-    wifi_second_chan_t second = 0;
+    wifi_second_chan_t second = (wifi_second_chan_t)0;
     mesh_addr_t parent_bssid = { 0 };
     uint8_t sta_mac[MWIFI_ADDR_LEN] = { 0 };
     wifi_sta_list_t wifi_sta_list = { 0x0 };
@@ -223,6 +223,12 @@ static void print_system_info_timercb(void *timer)
 }
 
 
+//typedef void (*SigCatcher)(void*);
+
+//typedef struct
+//{
+ //   SigCatcher mdf_event_mwifi_parent_connected;
+//}eventLoopCallbackPtr;
 /**
  * @brief All module events will be sent to this task in esp-mdf
  *
@@ -234,7 +240,7 @@ static void print_system_info_timercb(void *timer)
 static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
 {
     switch (event) {
-        case MDF_EVENT_MWIFI_PARENT_CONNECTED:
+        case MDF_EVENT_MWIFI_PARENT_CONNECTED:{
             MDF_LOGI("MDF_EVENT_PARENT_CONNECTED");
 
             if (esp_mesh_is_root()) {
@@ -250,7 +256,7 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
             }
 
             break;
-
+        }
 /*        case MDF_EVENT_MWIFI_ROOT_GOT_IP:
             MDF_LOGI("MDF_EVENT_MWIFI_ROOT_GOT_IP");
             xTaskCreate(ota_task, "ota_task", 4 * 1024,NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
@@ -265,18 +271,18 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
             break;
         }
 
-        case MDF_EVENT_MUPGRADE_STATUS:
+        case MDF_EVENT_MUPGRADE_STATUS:{
             MDF_LOGI("Upgrade progress: %d%%", (int)ctx);
             break;
 
+}
 
 
 
 
-
-        case MDF_EVENT_MWIFI_STARTED:
+        case MDF_EVENT_MWIFI_STARTED:{
             MDF_LOGI("MESH is started");
-            break;
+            break;}
 
 /*        case MDF_EVENT_MWIFI_PARENT_CONNECTED:
             MDF_LOGI("Parent is connected on station interface");
@@ -287,17 +293,17 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
 
             break;
 */
-        case MDF_EVENT_MWIFI_PARENT_DISCONNECTED:
+        case MDF_EVENT_MWIFI_PARENT_DISCONNECTED:{
             MDF_LOGI("Parent is disconnected on station interface");
 
             if (esp_mesh_is_root()) {
                 mesh_mqtt_stop();
             }
 
-            break;
+            break;}
 
-        case MDF_EVENT_MWIFI_ROUTING_TABLE_ADD:
-        case MDF_EVENT_MWIFI_ROUTING_TABLE_REMOVE:
+        case MDF_EVENT_MWIFI_ROUTING_TABLE_ADD:{}
+        case MDF_EVENT_MWIFI_ROUTING_TABLE_REMOVE:{
             MDF_LOGI("MDF_EVENT_MWIFI_ROUTING_TABLE_REMOVE, total_num: %d", esp_mesh_get_total_node_num());
 
             if (esp_mesh_is_root() && mwifi_get_root_status()) {
@@ -309,7 +315,7 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
             }
 
             break;
-
+}
         case MDF_EVENT_MWIFI_ROOT_GOT_IP: {
             MDF_LOGI("Root obtains the IP address. It is posted by LwIP stack automatically");
 
@@ -323,7 +329,7 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
             break;
         }
 
-        case MDF_EVENT_CUSTOM_MQTT_CONNECTED:
+        case MDF_EVENT_CUSTOM_MQTT_CONNECTED:{
             MDF_LOGI("MQTT connect");
             mdf_err_t err = mesh_mqtt_subscribe();
             if (err != MDF_OK) {
@@ -336,11 +342,11 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
             
             mwifi_post_root_status(true);
             break;
-
-        case MDF_EVENT_CUSTOM_MQTT_DISCONNECTED:
+}
+        case MDF_EVENT_CUSTOM_MQTT_DISCONNECTED:{
             MDF_LOGI("MQTT disconnected");
             mwifi_post_root_status(false);
-            break;
+            break;}
 
 
         default:
@@ -375,17 +381,28 @@ static mdf_err_t wifi_init()
     return MDF_OK;
 }
 
-void app_main()
+#include "Arduino.h"
+
+//void app_main()
+extern "C" void app_main()
 {
+
+//    initArduino();
+
     mwifi_init_config_t cfg = MWIFI_INIT_CONFIG_DEFAULT();
     mwifi_config_t config   = {
 //        .router_ssid     = CONFIG_ROUTER_SSID,
 //        .router_password = CONFIG_ROUTER_PASSWORD,
-        .mesh_id         = CONFIG_MESH_ID,
+//        .mesh_id         = CONFIG_MESH_ID,
     };
-
+ 
+memcpy(config.mesh_id, CONFIG_MESH_ID, strlen(CONFIG_MESH_ID));
+//char *customSsid = "myssid1";
 memcpy(config.router_ssid, "myssid", strlen("myssid"));
 memcpy(config.router_password, "mypassword123", strlen("mypassword123"));
+
+
+    Serial.begin (115200, SERIAL_8N1);   while(!Serial);
 
     /**
      * @brief Set the log level for serial port printing.
