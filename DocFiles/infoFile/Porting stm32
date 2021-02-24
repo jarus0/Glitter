@@ -1,0 +1,27 @@
+creat a new branch
+
+Appliacne support
+Communication Mode
+JSON
+File system
+
+C++ support (std string, vector, std::ostringstream)
+RTOS support > thread creation, mutex
+
+
+mesh? > also work if given some king network access
+
+
+how do i build this
+
+
+suppose i have send funtion
+
+in code theri is three blocks
+> websocket, mqtt, ble, now one more Serial
+
+so what i selct send funtion start using that
+
+
+Develping in esp32 is faster
+so my logic ready in any controoller then port to STM32 (cheap controller)

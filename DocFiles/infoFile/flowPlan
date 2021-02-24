@@ -1,0 +1,30 @@
+I am following this Flow structure (open for suggestion, if found loophole please inform)
+- Flow is running in device > Device Restart > Flow will not reset from zero position, skkiped 
+- FlowId can be attached with any appliance or module (if the action doesn't match with appliance return without performing)
+- flow file contain > (delay, action) pair
+
+Open all flowIDs file which are in flowLookupFile.
+
+flowID > {"flowId":{"actionsId":["action1","action2",["action1","action2"]],"delays":[10,20,30]}}
+start schudle accpronmg to > jFlowStatusFile > {"applianceID1":"flowId","applianceID2":"flowId","applianceID3":"flowId","postion":[0,2,5]}
+
+
+$jsend '{"id":"'$DeviceID'","cmd":[2,1],"data":{"Tue":{"'$(date +%H:%M:00 -d +120sec)'":{"aid1":"0action","aid2":"1action"},"'$(date +%H:%M:00 -d +180sec)'":{"aid1":"0action","aid2":"1action"},"'$(date +%H:%M:00 -d +240sec)'":{"aid1":"0action","aid2":"1action"},"'$(date +%H:%M:00 -d +300sec)'":{"aid1":"0action","aid2":"1action"},"'$(date +%H:%M:00 -d +360sec)'":{"aid1":"0action","aid2":"1action"},"'$(date +%H:%M:00 -d +420sec)'":{"aid1":"0action","aid2":"1action"}}}}'
+
+multiple same type appliace cmd fire
+> in which applice to send cmd > need to implment in actionDecoder funtion
+
+
+
+How IR firing
+IR handler funtion
+	- Read file > load parameter OBJ > Send that obj to AC handler
+
+Action Decoder funtion
+	- Read file >  load parameter OBJ
+
+
+Why doing this > 
+IR handler funtion does't have AppliaceID acces
+Action Decoder funtion has
+

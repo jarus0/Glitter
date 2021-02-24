@@ -19,6 +19,9 @@
 #include "mlink.h"
 #include "mwifi.h"
 
+#include "../../../main/Jfunctionality.h"
+Jfunctionality coreFunc1;
+
 static struct mesh_mqtt {
     xQueueHandle queue; /**< mqtt receive data queue */
     esp_mqtt_client_handle_t client; /**< mqtt client */
@@ -244,14 +247,25 @@ static mesh_mqtt_data_t *mesh_mqtt_parse_data(const char *topic, size_t topic_si
         goto _exit;
     }
 
+    printf("Collected\t: %s\n", cJSON_PrintUnformatted(data));
+    char *some = coreFunc1.EnumPostmanFunction( data );
+    printf("Returnning\t: %s\n", some);
+    free (some);
+    printf("suraj\n");
+
+
     cJSON *data1 = cJSON_GetObjectItem(data, "key3");    
-    char *ch;
-    ch = cJSON_PrintUnformatted(data1);
-    MDF_LOGI("------------>%s\n", ch);
-    if (strncmp(ch, "\"update\"", strlen("\"update\"")) == 0) {
-        MDF_LOGI("---------Going to OTA\n");
-        xTaskCreate((TaskFunction_t)ota_task, "ota_task", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
+    if (data1){
+        char *ch = cJSON_PrintUnformatted(data1);
+        MDF_LOGI("------------>%s\n", ch);
+        if (strncmp(ch, "\"update\"", strlen("\"update\"")) == 0) {
+            MDF_LOGI("---------Going to OTA\n");
+            xTaskCreate((TaskFunction_t)ota_task, "ota_task", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
+        }
     }
+
+
+
 
 
 

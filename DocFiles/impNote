@@ -1,0 +1,9 @@
+https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/kconfig.html#config-esp32-time-syscall
+
+sdkconfig
+
+
+ESP32 Specifc
+timmer used for gettimeofday > RTC
+RTC clock source > exterbak 32khz crystal
+number or attrmt to repate 32k xtal calibaration > 5

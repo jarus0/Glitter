@@ -1,0 +1,18 @@
+{"id":"'$DeviceID'","cmd":[2,1],"data":{"F-AClight":{"IoTick_AirCon":["D-0","D-1","F-AClight"],"delays":[30,570,0]}}}
+
+{"id":"'$DeviceID'","cmd":[2,1],"data":{"F-testLED1":{"IoTick_AirCon":["D-0","D-1","F-testLED1"],"delays":[30,30,0]}}}
+
+{"id":"'$DeviceID'","cmd":[2,1],"data":{"F-testLED2":{"IoTick_AirCon":["D-0","D-1","F-testLED2"],"delays":[570,30,0]}}}
+
+{"id":"'$DeviceID'","cmd":[4,1],"data":{"AClight":"F-AClight","testLED1":"F-testLED1","testLED2":"F-testLED2"}}
+
+
+
+$jsend '{"id":"'$DeviceID'","cmd":[2,1],"data":{"F-testLED1":{"IoTick_AirCon":["D-1","D-0","F-testLED1"],"delays":[10,10,0]}}}'
+
+$jsend '{"id":"'$DeviceID'","cmd":[2,1],"data":{"F-testLED2":{"IoTick_AirCon":["D-1","D-0","F-testLED2"],"delays":[5,15,0]}}}'
+
+$jsend '{"id":"'$DeviceID'","cmd":[4,1],"data":{"testLED1":"F-testLED1","testLED2":"F-testLED2"}}'
+
+
+{"id":"'$DeviceID'","cmd":[4,1],"data":{"AClight":"F-AClight"}}

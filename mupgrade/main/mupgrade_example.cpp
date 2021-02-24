@@ -382,7 +382,7 @@ static mdf_err_t wifi_init()
 }
 
 #include "Arduino.h"
-
+#include "main.h"
 //void app_main()
 extern "C" void app_main()
 {
@@ -398,7 +398,7 @@ extern "C" void app_main()
  
 memcpy(config.mesh_id, CONFIG_MESH_ID, strlen(CONFIG_MESH_ID));
 //char *customSsid = "myssid1";
-memcpy(config.router_ssid, "myssid", strlen("myssid"));
+memcpy(config.router_ssid, "myssid1", strlen("myssid1"));
 memcpy(config.router_password, "mypassword123", strlen("mypassword123"));
 
 
@@ -428,4 +428,6 @@ memcpy(config.router_password, "mypassword123", strlen("mypassword123"));
     TimerHandle_t timer = xTimerCreate("print_system_info", 10000 / portTICK_RATE_MS,
                                        true, NULL, print_system_info_timercb);
     xTimerStart(timer, 0);
+
+        myCodeStartFromHere();
 }
